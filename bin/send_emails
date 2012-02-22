@@ -1,0 +1,6 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use II::Mailer::Script::Send;
+II::Mailer::Script::Send->new_with_options->run;
