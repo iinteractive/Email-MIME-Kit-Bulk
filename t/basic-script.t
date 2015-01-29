@@ -27,6 +27,9 @@ my %email = map { $_->header('To') => $_ }
                 @msgs;
 
 subtest "email 1 sent" => sub {
+    # for the dev version
+    $Email::MIME::Kit::Bulk::VERSION ||= '0.0';
+
     my $email = $email{'someone@somewhere.com'};
 
     ok $email, "email is there";

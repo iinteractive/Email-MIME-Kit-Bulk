@@ -1,8 +1,6 @@
 package Email::MIME::Kit::Bulk;
 # ABSTRACT: Email::MIME::Kit-based bulk mailer
 
-$Email::MIME::Kit::Bulk::VERSION ||= '0.0';
-
 =head1 SYNOPSIS
 
     use Email::MIME::Kit::Bulk;
