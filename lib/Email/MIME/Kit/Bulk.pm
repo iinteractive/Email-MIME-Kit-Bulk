@@ -112,8 +112,6 @@ Email address of the 'C<Cc:>' recipient. Ignored if C<targets> is given as well.
 
 Email address of the 'C<Bcc:>' recipient. Ignored if C<targets> is given as well.
 
-=back
-
 =cut
 
 has targets => (
@@ -156,6 +154,8 @@ has from => (
 Maximal number of parallel processes used to send the emails.
 
 Defaults to 1.
+
+=back
 
 =cut
 
