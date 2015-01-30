@@ -43,6 +43,13 @@ option processes => (
     default => 1,
 );
 
+option quiet => (
+    is => 'ro',
+    isa => 'Bool',
+    documentation => q{don't output anything},
+    default => 0,
+);
+
 has transport => (
     is => 'ro',
 );
@@ -74,6 +81,7 @@ sub run {
     my @addresses = @{ decode_json($self->_targets_file->slurp) };
 
     my $mailer = Email::MIME::Kit::Bulk->new(
+        verbose => !$self->quiet,
         targets => [ map { Email::MIME::Kit::Bulk::Target->new($_) } @addresses ],
         kit     => $self->kit,
         (defined $self->from

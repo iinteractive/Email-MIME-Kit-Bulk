@@ -16,6 +16,7 @@ Email::MIME::Kit::Bulk::Command->new(
     kit  => 'examples/eg.mkit',
     from => 'me@here.com',
     transport => $transport,
+    quiet => 1,
 )->run;
 
 my @msgs = $maildir->child('new')->children;

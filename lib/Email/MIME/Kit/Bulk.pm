@@ -163,6 +163,12 @@ has processes => (
     default => 1,
 );
 
+has verbose => (
+    isa => 'Bool',
+    is => 'ro',
+    default => 0,
+);
+
 has fork_manager => (
     is      => 'ro',
     isa     => 'Parallel::ForkManager',
@@ -217,7 +223,7 @@ sub send {
     $pm->run_on_finish(sub {
         my (undef, $exit_code) = @_;
         $errors++ if $exit_code;
-        print $exit_code ? "x" : ".";
+        print $exit_code ? "x" : "." if $self->verbose;
     });
 
     for my $target ($self->targets) {
@@ -256,7 +262,7 @@ sub send {
     $pm->wait_all_children;
 
     warn "\n" . ($self->num_targets - $errors) . ' email(s) sent successfully'
-       . ($errors ? " ($errors failure(s))" : '') . "\n";
+       . ($errors ? " ($errors failure(s))" : '') . "\n" if $self->verbose;
 
     STDOUT->autoflush($af);
 
