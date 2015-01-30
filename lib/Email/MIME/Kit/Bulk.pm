@@ -192,12 +192,7 @@ around BUILDARGS => sub {
         $params->{targets} = [
             Email::MIME::Kit::Bulk::Target->new(
                 to => delete $params->{to},
-                (exists $params->{cc}
-                    ? (cc => delete $params->{cc})
-                    : ()),
-                (exists $params->{bcc}
-                    ? (bcc => delete $params->{bcc})
-                    : ()),
+                map { maybe $_ => delete $params->{$_} } qw/ cc bcc /
             )
         ];
     }
