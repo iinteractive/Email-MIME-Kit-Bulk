@@ -73,7 +73,7 @@ use Email::MIME;
 use Email::MIME::Kit;
 use Email::Sender::Simple 'sendmail';
 use MooseX::Types::Email;
-use MooseX::Types::Path::Class;
+use MooseX::Types::Path::Tiny qw/ Path /;
 use Parallel::ForkManager;
 use Try::Tiny;
 use PerlX::Maybe;
@@ -125,12 +125,13 @@ has targets => (
 =item kit => $path
 
 Path of the directory holding the files used by L<Email::MIME::Kit>.
+Can be a string or a L<Path::Tiny> object.
 
 =cut
 
 has kit => (
     is       => 'ro',
-    isa      => 'Path::Class::Dir',
+    isa      => Path,
     required => 1,
     coerce   => 1,
 );

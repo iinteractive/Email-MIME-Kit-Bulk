@@ -17,13 +17,12 @@ use MooseX::App::Simple;
 use Email::MIME::Kit::Bulk;
 use Email::MIME::Kit::Bulk::Target;
 use JSON;
-use MooseX::Types::Path::Class;
-use Path::Class;
+use MooseX::Types::Path::Tiny qw/ Path /;
 use PerlX::Maybe;
 
 option kit => (
     is       => 'ro',
-    isa      => 'Path::Class::Dir',
+    isa      => Path,
     required => 1,
     coerce   => 1,
     documentation => 'path to the mime kit directory',
@@ -56,9 +55,9 @@ has transport => (
 
 has _targets_file => (
     is      => 'ro',
-    isa     => 'Path::Class::File',
+    isa     => Path,
     lazy    => 1,
-    default => sub { shift->kit->file('targets.json') },
+    default => sub { shift->kit->child('targets.json') },
 );
 
 sub BUILD {
