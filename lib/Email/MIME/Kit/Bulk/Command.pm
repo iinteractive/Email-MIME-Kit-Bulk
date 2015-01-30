@@ -83,12 +83,8 @@ sub run {
         verbose => !$self->quiet,
         targets => [ map { Email::MIME::Kit::Bulk::Target->new($_) } @addresses ],
         kit     => $self->kit,
-        (defined $self->from
-            ? (from => $self->from)
-            : ()),
-        (defined $self->processes
-            ? (children => $self->processes)
-            : ()),
+        maybe from      => $self->from,
+        maybe processes => $self->processes,
         maybe transport => $self->transport,
     );
 
