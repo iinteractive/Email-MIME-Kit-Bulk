@@ -12,6 +12,9 @@ my $maildir = tempdir();
 # the forking makes using EST::Test difficult
 my $transport = Email::Sender::Transport::Maildir->new( dir => $maildir );
 
+# for the dev version
+$Email::MIME::Kit::Bulk::VERSION ||= '0.0';
+
 Email::MIME::Kit::Bulk::Command->new(
     kit  => 'examples/eg.mkit',
     from => 'me@here.com',
@@ -28,9 +31,6 @@ my %email = map { $_->header('To') => $_ }
                 @msgs;
 
 subtest "email 1 sent" => sub {
-    # for the dev version
-    $Email::MIME::Kit::Bulk::VERSION ||= '0.0';
-
     my $email = $email{'someone@somewhere.com'};
 
     ok $email, "email is there";
