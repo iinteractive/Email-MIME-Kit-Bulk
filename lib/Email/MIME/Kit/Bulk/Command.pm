@@ -37,9 +37,8 @@ option from => (
 
 option processes => (
     is  => 'ro',
-    isa => 'Int',
+    isa => 'Maybe[Int]',
     documentation => 'nbr of parallel processes for sending emails',
-    default => 1,
 );
 
 option quiet => (

@@ -64,6 +64,14 @@ the L<Email::MIME::Kit::Bulk::Target> constructor arguments:
     ]
 
 
+C<Email::MIME::Kit::Bulk> uses L<MCE> to parallize the sending of the emails.
+The number of processes used can be set via the C<processes> constructor 
+argument.  By default L<MCE> will select the number of processes based on
+the number of available
+processors. If the number of processes is set to be C<1>, L<MCE> is bypassed 
+altogether.
+
+
 =cut
 
 use Moose;
@@ -74,9 +82,10 @@ use Email::MIME::Kit;
 use Email::Sender::Simple 'sendmail';
 use MooseX::Types::Email;
 use MooseX::Types::Path::Tiny qw/ Path /;
-use Parallel::ForkManager;
 use Try::Tiny;
 use PerlX::Maybe;
+use List::AllUtils qw/ sum0 /;
+use MCE::Map;
 
 use Email::MIME::Kit::Bulk::Kit;
 use Email::MIME::Kit::Bulk::Target;
@@ -152,29 +161,31 @@ has from => (
 
 Maximal number of parallel processes used to send the emails.
 
-Defaults to 1.
+If not specified, will be chosen by L<MCE>.
+If set to 1, the parallel processing will be skipped
+altogether.
+
+Not specified by default.
 
 =back
 
 =cut
 
 has processes => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 1,
+    is        => 'ro',
+    isa       => 'Maybe[Int]',
+    predicate => 'has_processes',
 );
+
+sub single_process { 
+    no warnings;
+    return $_[0]->processes == 1;
+}
 
 has verbose => (
     isa => 'Bool',
     is => 'ro',
     default => 0,
-);
-
-has fork_manager => (
-    is      => 'ro',
-    isa     => 'Parallel::ForkManager',
-    lazy    => 1,
-    default => sub { Parallel::ForkManager->new(shift->processes) },
 );
 
 has transport => (
@@ -216,51 +227,15 @@ Send the emails.
 sub send {
     my $self = shift;
 
-    my $pm = $self->fork_manager;
-
     my $af = STDOUT->autoflush;
 
-    my $errors = 0;
-    $pm->run_on_finish(sub {
-        my (undef, $exit_code) = @_;
-        $errors++ if $exit_code;
-        print $exit_code ? "x" : "." if $self->verbose;
-    });
+    MCE::Map::init { max_workers => $self->processes } 
+        if $self->has_processes;
 
-    for my $target ($self->targets) {
-        $pm->start and next;
-
-        my $email = $self->assemble_mime_kit($target);
-        # work around bugs in q-p encoding (it forces \r\n, but the sendmail
-        # executable expects \n, or something like that)
-        (my $text = $email->as_string) =~ s/\x0d\x0a/\n/g;
-        my $res = try {
-            sendmail(
-                $text,
-                {
-                    from => $target->from,
-                    to   => [ $target->recipients ],
-                    maybe transport => $self->transport,
-                }
-            );
-            0;
-        }
-        catch {
-            my @recipients = (blessed($_) && $_->isa('Email::Sender::Failure'))
-                ? ($_->recipients)
-                : ($target->recipients);
-
-            # XXX better error handling here - logging?
-            warn 'Failed to send to ' . join(', ', @recipients) . ': '
-               . "$_";
-
-            1;
-        };
-
-        $pm->finish($res);
-    }
-
-    $pm->wait_all_children;
+    my $errors = sum0 
+        $self->single_process 
+            ? map     { $self->send_target($_) } $self->targets
+            : mce_map { $self->send_target($_) } $self->targets;
 
     warn "\n" . ($self->num_targets - $errors) . ' email(s) sent successfully'
        . ($errors ? " ($errors failure(s))" : '') . "\n" if $self->verbose;
@@ -268,6 +243,41 @@ sub send {
     STDOUT->autoflush($af);
 
     return $self->num_targets - $errors;
+}
+
+sub send_target {
+    my( $self, $target ) = @_;
+
+    my $email = $self->assemble_mime_kit($target);
+
+    # work around bugs in q-p encoding (it forces \r\n, but the sendmail
+    # executable expects \n, or something like that)
+    (my $text = $email->as_string) =~ s/\x0d\x0a/\n/g;
+
+    return try {
+        sendmail(
+            $text,
+            {
+                from => $target->from,
+                to   => [ $target->recipients ],
+                maybe transport => $self->transport,
+            }
+        );
+        print '.' if $self->verbose;
+        0;
+    }
+    catch {
+        my @recipients = (blessed($_) && $_->isa('Email::Sender::Failure'))
+            ? ($_->recipients)
+            : ($target->recipients);
+
+        # XXX better error handling here - logging?
+        warn 'Failed to send to ' . join(', ', @recipients) . ': '
+            . "$_";
+
+        print 'x' if $self->verbose;
+        1;
+    };
 }
 
 sub assemble_mime_kit {
