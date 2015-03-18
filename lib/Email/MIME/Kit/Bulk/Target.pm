@@ -1,5 +1,104 @@
 package Email::MIME::Kit::Bulk::Target;
+BEGIN {
+  $Email::MIME::Kit::Bulk::Target::AUTHORITY = 'cpan:YANICK';
+}
 # ABSTRACT: Destination for an Email::MIME::Kit::Bulk email
+$Email::MIME::Kit::Bulk::Target::VERSION = '0.0.1';
+
+use strict;
+use warnings;
+
+use Moose;
+use namespace::autoclean;
+
+use MooseX::Types::Email;
+
+
+has to => (
+    is       => 'ro',
+    isa      => 'MooseX::Types::Email::EmailAddress',
+    required => 1,
+);
+
+
+has cc => (
+    traits  => ['Array'],
+    isa     => 'ArrayRef[MooseX::Types::Email::EmailAddress]',
+    default => sub { [] },
+    handles => {
+        cc => 'elements',
+    },
+);
+
+
+has bcc => (
+    traits  => ['Array'],
+    isa     => 'ArrayRef[MooseX::Types::Email::EmailAddress]',
+    default => sub { [] },
+    handles => {
+        bcc => 'elements',
+    },
+);
+
+
+has from => (
+    is  => 'ro',
+    isa => 'MooseX::Types::Email::EmailAddress',
+);
+
+
+has language => (
+    is        => 'ro',
+    isa       => 'Str',
+    predicate => 'has_language',
+);
+
+
+has template_params => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    default => sub { {} },
+);
+
+
+has extra_attachments => (
+    traits  => ['Array'],
+    isa     => 'ArrayRef[Str|ArrayRef[Str]]',
+    default => sub { [] },
+    handles => {
+        extra_attachments => 'elements',
+    },
+);
+
+
+sub recipients {
+    my $self = shift;
+
+    # TODO remove dupes?
+    return (
+        $self->to,
+        $self->cc,
+        $self->bcc,
+    );
+}
+
+__PACKAGE__->meta->make_immutable;
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Email::MIME::Kit::Bulk::Target - Destination for an Email::MIME::Kit::Bulk email
+
+=head1 VERSION
+
+version 0.0.1
 
 =head1 SYNOPSIS
 
@@ -74,28 +173,10 @@ Attachments to add to the email for this target.
 
 =back
 
-=cut
-
-use strict;
-use warnings;
-
-use Moose;
-use namespace::autoclean;
-
-use MooseX::Types::Email;
-
 =head2 to()
 
 Returns the L<MooseX::Types::Email::EmailAddress> object 
 for the C<To> recipient.
-
-=cut
-
-has to => (
-    is       => 'ro',
-    isa      => 'MooseX::Types::Email::EmailAddress',
-    required => 1,
-);
 
 =head2 cc()
 
@@ -104,17 +185,6 @@ has to => (
 Returns the list of L<MooseX::Types::Email::EmailAddress> objects 
 for the C<Cc> recipients.
 
-=cut
-
-has cc => (
-    traits  => ['Array'],
-    isa     => 'ArrayRef[MooseX::Types::Email::EmailAddress]',
-    default => sub { [] },
-    handles => {
-        cc => 'elements',
-    },
-);
-
 =head2 bcc()
 
     my @bcc = $target->bcc;
@@ -122,30 +192,12 @@ has cc => (
 Returns the list of L<MooseX::Types::Email::EmailAddress> objects 
 for the C<Bcc> recipients.
 
-=cut
-
-has bcc => (
-    traits  => ['Array'],
-    isa     => 'ArrayRef[MooseX::Types::Email::EmailAddress]',
-    default => sub { [] },
-    handles => {
-        bcc => 'elements',
-    },
-);
-
 =head2 from()
 
     my $from = $target->from;
 
 Returns the  L<MooseX::Types::Email::EmailAddress> object
 for the C<From> originator.
-
-=cut
-
-has from => (
-    is  => 'ro',
-    isa => 'MooseX::Types::Email::EmailAddress',
-);
 
 =head2 language()
 
@@ -157,60 +209,39 @@ Returns the  language set for the target.
 
 Returns true if a language was set for the target.
 
-=cut
-
-has language => (
-    is        => 'ro',
-    isa       => 'Str',
-    predicate => 'has_language',
-);
-
 =head2 template_params()
 
 Returns the hash ref of the parameters that will be passed to the
 L<Email::MIME::Kit> template.
-
-=cut
-
-has template_params => (
-    is      => 'ro',
-    isa     => 'HashRef',
-    default => sub { {} },
-);
 
 =head2 extra_attachments()
 
 Returns the list of extra attachments that will be added
 to the email for this target.
 
-=cut
-
-has extra_attachments => (
-    traits  => ['Array'],
-    isa     => 'ArrayRef[Str|ArrayRef[Str]]',
-    default => sub { [] },
-    handles => {
-        extra_attachments => 'elements',
-    },
-);
-
 =head2 recipients 
 
 Returns all the recipients (I<To>, I<Cc> and I<Bcc> combined) of the email.
 
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Jesse Luehrs    <doy@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick.champoux@iinteractive.com>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Infinity Interactive <contact@iinteractive.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
-
-sub recipients {
-    my $self = shift;
-
-    # TODO remove dupes?
-    return (
-        $self->to,
-        $self->cc,
-        $self->bcc,
-    );
-}
-
-__PACKAGE__->meta->make_immutable;
-
-1;

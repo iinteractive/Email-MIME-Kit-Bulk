@@ -1,78 +1,9 @@
 package Email::MIME::Kit::Bulk;
+BEGIN {
+  $Email::MIME::Kit::Bulk::AUTHORITY = 'cpan:YANICK';
+}
 # ABSTRACT: Email::MIME::Kit-based bulk mailer
-
-=head1 SYNOPSIS
-
-    use Email::MIME::Kit::Bulk;
-    use Email::MIME::Kit::Bulk::Target;
-
-    my @targets = (
-        Email::MIME::Kit::Bulk::Target->new(
-            to => 'someone@somewhere.com',
-        ),
-        Email::MIME::Kit::Bulk::Target->new(
-            to => 'someone.else@somewhere.com',
-            cc => 'copied@somewhere.com',
-            language => 'en',
-        ),
-    );
-
-    my $bulk = Email::MIME::Kit::Bulk->new(
-        kit => '/path/to/mime/kit',
-        processes => 5,
-        targets => \@targets,
-    );
-
-    $bulk->send;
-
-=head1 DESCRIPTION
-
-C<Email::MIME::Kit::Bulk> is an extension of L<Email::MIME::Kit> for sending
-bulk emails. The module can be used directly, or via the 
-companion script C<emk_bulk>.
-
-If a language is specified for a target, C<Email::MIME::Kit> will use
-C<manifest.I<language>.json> to generate its associated email. If no language 
-is given, the regular C<manifest.json> will be used instead.
-
-If C<emk_bulk> is used, it'll look in the I<kit> directory for a
-C<targets.json> file, which it'll use to create the email targets.
-The format of the C<targets.json> file is a simple serialization of
-the L<Email::MIME::Kit::Bulk::Target> constructor arguments:
-
-    [
-    {
-        "to" : "someone@somewhere.com"
-        "cc" : [
-            "someone+cc@somewhere.com"
-        ],
-        "language" : "en",
-        "template_params" : {
-            "superlative" : "Fantastic"
-        },
-    },
-    {
-        "to" : "someone+french@somewhere.com"
-        "cc" : [
-            "someone+frenchcc@somewhere.com"
-        ],
-        "language" : "fr",
-        "template_params" : {
-            "superlative" : "Extraordinaire"
-        },
-    }
-    ]
-
-
-C<Email::MIME::Kit::Bulk> uses L<MCE> to parallize the sending of the emails.
-The number of processes used can be set via the C<processes> constructor 
-argument.  By default L<MCE> will select the number of processes based on
-the number of available
-processors. If the number of processes is set to be C<1>, L<MCE> is bypassed 
-altogether.
-
-
-=cut
+$Email::MIME::Kit::Bulk::VERSION = '0.0.1';
 
 use Moose;
 use namespace::autoclean;
@@ -90,36 +21,6 @@ use MCE::Map;
 use Email::MIME::Kit::Bulk::Kit;
 use Email::MIME::Kit::Bulk::Target;
 
-=head1 METHODS
-
-=head2 new( %args ) 
-
-Constructor.
-
-=head3 Arguments
-
-=over
-
-=item targets => \@targets
-
-Takes in an array of L<Email::MIME::Kit::Bulk::Target> objects,
-which are the email would-be recipients.
-
-Either the argument C<targets> or C<to> must be passed to the constructor.
-
-=item to => $email_address
-
-Email address of the 'C<To:>' recipient. Ignored if C<targets> is given as well.
-
-=item cc => $email_address
-
-Email address of the 'C<Cc:>' recipient. Ignored if C<targets> is given as well.
-
-=item bcc => $email_address
-
-Email address of the 'C<Bcc:>' recipient. Ignored if C<targets> is given as well.
-
-=cut
 
 has targets => (
     traits   => ['Array'],
@@ -131,12 +32,6 @@ has targets => (
     },
 );
 
-=item kit => $path
-
-Path of the directory holding the files used by L<Email::MIME::Kit>.
-Can be a string or a L<Path::Tiny> object.
-
-=cut
 
 has kit => (
     is       => 'ro',
@@ -145,11 +40,6 @@ has kit => (
     coerce   => 1,
 );
 
-=item from => $email_address
-
-'C<From>' address for the email .
-
-=cut
 
 has from => (
     is       => 'ro',
@@ -157,19 +47,6 @@ has from => (
     required => 1,
 );
 
-=item processes => $nbr
-
-Maximal number of parallel processes used to send the emails.
-
-If not specified, will be chosen by L<MCE>.
-If set to 1, the parallel processing will be skipped
-altogether.
-
-Not specified by default.
-
-=back
-
-=cut
 
 has processes => (
     is        => 'ro',
@@ -218,11 +95,6 @@ around BUILDARGS => sub {
     return $params;
 };
 
-=head2 send()
-
-Send the emails.
-
-=cut
 
 sub send {
     my $self = shift;
@@ -349,3 +221,163 @@ sub assemble_mime_kit {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Email::MIME::Kit::Bulk - Email::MIME::Kit-based bulk mailer
+
+=head1 VERSION
+
+version 0.0.1
+
+=head1 SYNOPSIS
+
+    use Email::MIME::Kit::Bulk;
+    use Email::MIME::Kit::Bulk::Target;
+
+    my @targets = (
+        Email::MIME::Kit::Bulk::Target->new(
+            to => 'someone@somewhere.com',
+        ),
+        Email::MIME::Kit::Bulk::Target->new(
+            to => 'someone.else@somewhere.com',
+            cc => 'copied@somewhere.com',
+            language => 'en',
+        ),
+    );
+
+    my $bulk = Email::MIME::Kit::Bulk->new(
+        kit => '/path/to/mime/kit',
+        processes => 5,
+        targets => \@targets,
+    );
+
+    $bulk->send;
+
+=head1 DESCRIPTION
+
+C<Email::MIME::Kit::Bulk> is an extension of L<Email::MIME::Kit> for sending
+bulk emails. The module can be used directly, or via the 
+companion script C<emk_bulk>.
+
+If a language is specified for a target, C<Email::MIME::Kit> will use
+C<manifest.I<language>.json> to generate its associated email. If no language 
+is given, the regular C<manifest.json> will be used instead.
+
+If C<emk_bulk> is used, it'll look in the I<kit> directory for a
+C<targets.json> file, which it'll use to create the email targets.
+The format of the C<targets.json> file is a simple serialization of
+the L<Email::MIME::Kit::Bulk::Target> constructor arguments:
+
+    [
+    {
+        "to" : "someone@somewhere.com"
+        "cc" : [
+            "someone+cc@somewhere.com"
+        ],
+        "language" : "en",
+        "template_params" : {
+            "superlative" : "Fantastic"
+        },
+    },
+    {
+        "to" : "someone+french@somewhere.com"
+        "cc" : [
+            "someone+frenchcc@somewhere.com"
+        ],
+        "language" : "fr",
+        "template_params" : {
+            "superlative" : "Extraordinaire"
+        },
+    }
+    ]
+
+C<Email::MIME::Kit::Bulk> uses L<MCE> to parallize the sending of the emails.
+The number of processes used can be set via the C<processes> constructor 
+argument.  By default L<MCE> will select the number of processes based on
+the number of available
+processors. If the number of processes is set to be C<1>, L<MCE> is bypassed 
+altogether.
+
+=head1 METHODS
+
+=head2 new( %args ) 
+
+Constructor.
+
+=head3 Arguments
+
+=over
+
+=item targets => \@targets
+
+Takes in an array of L<Email::MIME::Kit::Bulk::Target> objects,
+which are the email would-be recipients.
+
+Either the argument C<targets> or C<to> must be passed to the constructor.
+
+=item to => $email_address
+
+Email address of the 'C<To:>' recipient. Ignored if C<targets> is given as well.
+
+=item cc => $email_address
+
+Email address of the 'C<Cc:>' recipient. Ignored if C<targets> is given as well.
+
+=item bcc => $email_address
+
+Email address of the 'C<Bcc:>' recipient. Ignored if C<targets> is given as well.
+
+=item kit => $path
+
+Path of the directory holding the files used by L<Email::MIME::Kit>.
+Can be a string or a L<Path::Tiny> object.
+
+=item from => $email_address
+
+'C<From>' address for the email .
+
+=item processes => $nbr
+
+Maximal number of parallel processes used to send the emails.
+
+If not specified, will be chosen by L<MCE>.
+If set to 1, the parallel processing will be skipped
+altogether.
+
+Not specified by default.
+
+=back
+
+=head2 send()
+
+Send the emails.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Jesse Luehrs    <doy@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick.champoux@iinteractive.com>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2015 by Infinity Interactive <contact@iinteractive.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
