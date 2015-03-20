@@ -4,7 +4,6 @@ use warnings;
 use Test::More tests => 3;
 
 use Email::MIME::Kit::Bulk::Command;
-use Path::Tiny qw/ tempdir /;
 
 use lib 't/lib';
 use MyTestEmail;
