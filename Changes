@@ -4,7 +4,6 @@ Revision history for {{$dist->name}}
  [API CHANGES]
 
  [BUG FIXES]
- - Skip test if temp directory not created.
 
  [DOCUMENTATION]
 
@@ -13,6 +12,13 @@ Revision history for {{$dist->name}}
  [NEW FEATURES]
 
  [STATISTICS]
+
+0.0.2 2015-03-20
+ [BUG FIXES]
+ - Skip test if temp directory not created.
+
+ [STATISTICS]
+ - code churn: 3 files changed, 25 insertions(+), 4 deletions(-)
 
 0.0.1 2015-03-18
  - Move the parallelization engine to MCE.
