@@ -1,18 +1,11 @@
-Revision history for {{$dist->name}}
+Revision history for Email-MIME-Kit-Bulk
 
-{{$NEXT}}
- [API CHANGES]
-
+0.0.2 2015-03-20
  [BUG FIXES]
  - Skip test if temp directory not created.
 
- [DOCUMENTATION]
-
- [ENHANCEMENTS]
-
- [NEW FEATURES]
-
  [STATISTICS]
+ - code churn: 3 files changed, 25 insertions(+), 4 deletions(-)
 
 0.0.1 2015-03-18
  - Move the parallelization engine to MCE.
