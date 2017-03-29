@@ -18,7 +18,7 @@ use Moose;
 
 extends 'Email::MIME::Kit';
 
-has '+manifest_reader' => (
+has '+_manifest_reader_seed' => (
     default => '=Email::MIME::Kit::Bulk::ManifestReader::JSON',
 );
 
