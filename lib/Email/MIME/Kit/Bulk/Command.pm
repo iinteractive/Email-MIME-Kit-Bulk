@@ -1,13 +1,7 @@
 package Email::MIME::Kit::Bulk::Command;
+our $AUTHORITY = 'cpan:YANICK';
 # ABSTRACT: send bulk emails using Email::MIME::Kit
-
-=head1 SYNOPSIS
-
-    use Email::MIME::Kit::Bulk::Command;
-
-    Email::MIME::Kit::Bulk::Command->new_with_options->run;
-
-=cut
+$Email::MIME::Kit::Bulk::Command::VERSION = '0.0.3';
 
 use strict;
 use warnings;
@@ -93,3 +87,46 @@ sub run {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Email::MIME::Kit::Bulk::Command - send bulk emails using Email::MIME::Kit
+
+=head1 VERSION
+
+version 0.0.3
+
+=head1 SYNOPSIS
+
+    use Email::MIME::Kit::Bulk::Command;
+
+    Email::MIME::Kit::Bulk::Command->new_with_options->run;
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Jesse Luehrs    <doy@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick.champoux@iinteractive.com>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2017 by Infinity Interactive <contact@iinteractive.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
