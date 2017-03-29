@@ -4,6 +4,7 @@ Revision history for {{$dist->name}}
  [API CHANGES]
 
  [BUG FIXES]
+ - Changes in the latest Email::MIME::Kit were breaking our code. (GH#2)
 
  [DOCUMENTATION]
 
